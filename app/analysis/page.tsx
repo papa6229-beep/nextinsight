@@ -151,7 +151,7 @@ export default function AnalysisPage() {
                 {isAnalyzing && <span className="text-xs text-blue-400 font-normal">분석 중...</span>}
               </CardTitle>
             </CardHeader>
-            <CardContent className="max-h-96 overflow-y-auto">
+            <CardContent className="max-h-[560px] overflow-y-auto">
               {error ? (
                 <div className="text-red-400 text-sm">{error}</div>
               ) : !report && isAnalyzing ? (

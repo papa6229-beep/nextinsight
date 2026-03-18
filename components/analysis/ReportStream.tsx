@@ -8,13 +8,20 @@ interface Props {
 }
 
 function renderInline(text: string): React.ReactNode[] {
-  const parts = text.split(/(\*\*[^*]+\*\*)/)
+  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/)
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {
       return (
         <strong key={i} className="font-semibold text-zinc-100">
           {part.slice(2, -2)}
         </strong>
+      )
+    }
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return (
+        <code key={i} className="bg-zinc-800 text-emerald-300 px-1.5 py-0.5 rounded text-[0.78em] font-mono">
+          {part.slice(1, -1)}
+        </code>
       )
     }
     return <span key={i}>{part}</span>
@@ -43,16 +50,17 @@ export function ReportStream({ text, isStreaming }: Props) {
   const elements: React.ReactNode[] = []
   let listBuffer: ListBuffer = null
   let listKey = 0
+  let emptyCount = 0
 
   const flushList = () => {
     if (!listBuffer) return
     const key = `list-${listKey++}`
     if (listBuffer.type === 'ul') {
       elements.push(
-        <ul key={key} className="my-2 space-y-1.5">
+        <ul key={key} className="my-3 space-y-2.5 pl-0.5">
           {listBuffer.items.map((item, j) => (
-            <li key={j} className="flex gap-2.5 text-sm text-zinc-300 leading-relaxed">
-              <span className="text-blue-400 mt-0.5 shrink-0 select-none">•</span>
+            <li key={j} className="flex gap-3 text-sm text-zinc-300 leading-relaxed">
+              <span className="text-blue-400/70 mt-[3px] shrink-0 select-none text-[9px]">▸</span>
               <span>{item}</span>
             </li>
           ))}
@@ -60,10 +68,10 @@ export function ReportStream({ text, isStreaming }: Props) {
       )
     } else {
       elements.push(
-        <ol key={key} className="my-2 space-y-1.5">
+        <ol key={key} className="my-3 space-y-2.5">
           {listBuffer.items.map((item, j) => (
-            <li key={j} className="flex gap-2.5 text-sm text-zinc-300 leading-relaxed">
-              <span className="text-blue-400 font-mono text-xs mt-0.5 shrink-0 select-none w-4">
+            <li key={j} className="flex gap-3 text-sm text-zinc-300 leading-relaxed">
+              <span className="text-blue-400 font-mono text-xs mt-0.5 shrink-0 select-none min-w-[18px]">
                 {j + 1}.
               </span>
               <span>{item}</span>
@@ -78,29 +86,38 @@ export function ReportStream({ text, isStreaming }: Props) {
   lines.forEach((line, i) => {
     if (line.startsWith('## ')) {
       flushList()
+      emptyCount = 0
+      const isFirst = elements.length === 0
       elements.push(
-        <div key={i} className="mt-7 mb-3 first:mt-0">
-          <h2 className="text-sm font-semibold text-blue-300 flex items-center gap-2">
+        <div key={i} className={`${isFirst ? 'mt-0' : 'mt-8'} mb-3`}>
+          <h2 className="text-[13px] font-semibold text-blue-300 tracking-wide leading-snug">
             {renderInline(line.slice(3))}
           </h2>
-          <div className="mt-2 border-b border-zinc-700/60" />
+          <div className="mt-2 h-px bg-gradient-to-r from-blue-700/50 via-zinc-700/30 to-transparent" />
         </div>
       )
     } else if (line.startsWith('### ')) {
       flushList()
+      emptyCount = 0
       elements.push(
-        <h3 key={i} className="text-sm font-semibold text-zinc-200 mt-4 mb-1.5 flex items-center gap-1.5">
-          <span className="w-1 h-3 bg-zinc-500 rounded-full inline-block shrink-0" />
+        <h3 key={i} className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mt-5 mb-2 flex items-center gap-2">
+          <span className="h-px w-3 bg-zinc-600 inline-block shrink-0" />
           {renderInline(line.slice(4))}
         </h3>
       )
+    } else if (line === '---') {
+      flushList()
+      emptyCount = 0
+      elements.push(<div key={i} className="my-5 h-px bg-zinc-800/80" />)
     } else if (line.startsWith('- ')) {
+      emptyCount = 0
       if (!listBuffer || listBuffer.type !== 'ul') {
         flushList()
         listBuffer = { type: 'ul', items: [] }
       }
       listBuffer.items.push(renderInline(line.slice(2)))
     } else if (/^\d+\.\s/.test(line)) {
+      emptyCount = 0
       const content = line.replace(/^\d+\.\s/, '')
       if (!listBuffer || listBuffer.type !== 'ol') {
         flushList()
@@ -109,10 +126,16 @@ export function ReportStream({ text, isStreaming }: Props) {
       listBuffer.items.push(renderInline(content))
     } else if (line.trim() === '') {
       flushList()
+      emptyCount++
+      // 빈 줄 한 번만 시각적 여백으로 처리
+      if (emptyCount === 1) {
+        elements.push(<div key={`gap-${i}`} className="h-2" />)
+      }
     } else {
       flushList()
+      emptyCount = 0
       elements.push(
-        <p key={i} className="text-sm text-zinc-300 leading-[1.75] my-1">
+        <p key={i} className="text-sm text-zinc-300 leading-[1.85] my-0.5">
           {renderInline(line)}
         </p>
       )

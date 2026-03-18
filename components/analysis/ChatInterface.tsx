@@ -12,10 +12,13 @@ interface Props {
 }
 
 function renderInline(text: string): React.ReactNode[] {
-  const parts = text.split(/(\*\*[^*]+\*\*)/)
+  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/)
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {
       return <strong key={i} className="font-semibold text-white">{part.slice(2, -2)}</strong>
+    }
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return <code key={i} className="bg-zinc-700 text-emerald-300 px-1 py-0.5 rounded text-[0.78em] font-mono">{part.slice(1, -1)}</code>
     }
     return <span key={i}>{part}</span>
   })
@@ -38,13 +41,15 @@ function AssistantMessage({ content, isPending }: { content: string; isPending?:
   let olItems: React.ReactNode[] = []
   let listKey = 0
 
+  let emptyCount = 0
+
   const flushUl = () => {
     if (!ulItems.length) return
     elements.push(
-      <ul key={`ul-${listKey++}`} className="my-1.5 space-y-1">
+      <ul key={`ul-${listKey++}`} className="my-2.5 space-y-2 pl-0.5">
         {ulItems.map((item, j) => (
-          <li key={j} className="flex gap-2 leading-relaxed">
-            <span className="text-blue-300 mt-0.5 shrink-0 select-none">•</span>
+          <li key={j} className="flex gap-2.5 leading-relaxed">
+            <span className="text-blue-400/70 mt-[3px] shrink-0 select-none text-[9px]">▸</span>
             <span>{item}</span>
           </li>
         ))}
@@ -56,10 +61,10 @@ function AssistantMessage({ content, isPending }: { content: string; isPending?:
   const flushOl = () => {
     if (!olItems.length) return
     elements.push(
-      <ol key={`ol-${listKey++}`} className="my-1.5 space-y-1">
+      <ol key={`ol-${listKey++}`} className="my-2.5 space-y-2">
         {olItems.map((item, j) => (
-          <li key={j} className="flex gap-2 leading-relaxed">
-            <span className="text-blue-300 shrink-0 select-none">{j + 1}.</span>
+          <li key={j} className="flex gap-2.5 leading-relaxed">
+            <span className="text-blue-400 font-mono text-xs mt-0.5 shrink-0 select-none min-w-[16px]">{j + 1}.</span>
             <span>{item}</span>
           </li>
         ))}
@@ -71,30 +76,43 @@ function AssistantMessage({ content, isPending }: { content: string; isPending?:
   lines.forEach((line, i) => {
     if (line.startsWith('## ')) {
       flushUl(); flushOl()
+      emptyCount = 0
+      const isFirst = elements.length === 0
       elements.push(
-        <p key={i} className="font-semibold text-zinc-100 mt-3 mb-1 first:mt-0">
-          {renderInline(line.slice(3))}
-        </p>
+        <div key={i} className={`${isFirst ? 'mt-0' : 'mt-5'} mb-2`}>
+          <p className="text-[12px] font-semibold text-blue-300 tracking-wide leading-snug">
+            {renderInline(line.slice(3))}
+          </p>
+          <div className="mt-1.5 h-px bg-gradient-to-r from-blue-700/40 via-zinc-700/20 to-transparent" />
+        </div>
       )
     } else if (line.startsWith('### ')) {
       flushUl(); flushOl()
+      emptyCount = 0
       elements.push(
-        <p key={i} className="font-medium text-zinc-200 mt-2 mb-0.5">
+        <p key={i} className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mt-3.5 mb-1">
           {renderInline(line.slice(4))}
         </p>
       )
     } else if (line.startsWith('- ')) {
       flushOl()
+      emptyCount = 0
       ulItems.push(renderInline(line.slice(2)))
     } else if (/^\d+\.\s/.test(line)) {
       flushUl()
+      emptyCount = 0
       olItems.push(renderInline(line.replace(/^\d+\.\s/, '')))
     } else if (line.trim() === '') {
       flushUl(); flushOl()
+      emptyCount++
+      if (emptyCount === 1) {
+        elements.push(<div key={`gap-${i}`} className="h-1.5" />)
+      }
     } else {
       flushUl(); flushOl()
+      emptyCount = 0
       elements.push(
-        <p key={i} className="leading-relaxed my-0.5">
+        <p key={i} className="leading-[1.8] my-0.5">
           {renderInline(line)}
         </p>
       )
@@ -103,7 +121,7 @@ function AssistantMessage({ content, isPending }: { content: string; isPending?:
 
   flushUl(); flushOl()
 
-  return <div className="text-sm space-y-0.5">{elements}</div>
+  return <div className="text-sm space-y-0">{elements}</div>
 }
 
 export function ChatInterface({ data, initialAnalysis, disabled }: Props) {
