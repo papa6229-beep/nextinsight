@@ -1,5 +1,5 @@
 import type { ParsedData } from '@/types/marketing'
-import { buildVerifiedSummary } from './data-summary'
+import { buildVerifiedSummary, formatDataForPrompt } from './data-summary'
 
 export const SYSTEM_PROMPT = `당신은 세계 최고 수준의 이커머스 마케팅 분석 전문가입니다.
 글로벌 브랜드와 수천 개의 쇼핑몰 데이터를 분석해온 경험을 바탕으로, 데이터에서 인과관계와 핵심 패턴을 정밀하게 읽어냅니다.
@@ -46,17 +46,24 @@ export function buildAnalysisPrompt(data: ParsedData, dateRange: { start: string
 
 ${verifiedSummary}`)
 
-  sections.push(`━━━ 원본 데이터 (패턴 분석용) ━━━
-[매출·회원 데이터]\n${JSON.stringify(data.sales, null, 0)}`)
+  // 금액 필드를 한국어 문자열로 변환한 뒤 전달
+  // (raw 숫자를 보내면 Claude가 자체 단위 변환·합산을 시도해 오류 발생)
+  const fmt = formatDataForPrompt(data)
 
-  if (data.googleAds?.length) {
-    sections.push(`[구글 애즈 데이터]\n${JSON.stringify(data.googleAds, null, 0)}`)
+  sections.push(`━━━ 일별 원본 데이터 (트렌드·패턴 분석용) ━━━
+※ 금액 필드는 이미 한국어 단위로 표기되어 있습니다. 숫자로 재환산하거나 합산하지 마세요.
+   총합·평균·최고·최저는 위의 [사전 검증된 집계 수치]를 그대로 인용하세요.
+
+[매출·회원 일별 데이터]\n${JSON.stringify(fmt.sales, null, 0)}`)
+
+  if (fmt.googleAds?.length) {
+    sections.push(`[구글 애즈 일별 데이터]\n${JSON.stringify(fmt.googleAds, null, 0)}`)
   }
-  if (data.partnership?.length) {
-    sections.push(`[파트너십 광고 데이터]\n${JSON.stringify(data.partnership, null, 0)}`)
+  if (fmt.partnership?.length) {
+    sections.push(`[파트너십 일별 데이터]\n${JSON.stringify(fmt.partnership, null, 0)}`)
   }
-  if (data.traffic?.length) {
-    sections.push(`[트래픽 데이터]\n${JSON.stringify(data.traffic, null, 0)}`)
+  if (fmt.traffic?.length) {
+    sections.push(`[트래픽 일별 데이터]\n${JSON.stringify(fmt.traffic, null, 0)}`)
   }
 
   sections.push(`━━━ 분석 리포트 작성 지침 ━━━
