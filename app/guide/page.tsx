@@ -1,117 +1,113 @@
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-
-const FILE_GUIDES = [
-  {
-    name: '매출·회원 (sales.xlsx) — 필수',
-    file: 'sales_sample.xlsx',
-    columns: [
-      { name: '날짜', type: 'YYYY-MM-DD', required: true, example: '2025-01-01' },
-      { name: '일별_매출액', type: '숫자 (원)', required: true, example: '12500000' },
-      { name: '주문_건수', type: '숫자', required: true, example: '340' },
-      { name: '신규_회원_가입수', type: '숫자', required: true, example: '85' },
-      { name: '누적_회원수', type: '숫자', required: false, example: '15820' },
-      { name: '구매_전환율', type: '숫자 (%)', required: false, example: '3.2' },
-      { name: '평균_객단가', type: '숫자 (원)', required: false, example: '36700' },
-      { name: '반품_취소_건수', type: '숫자', required: false, example: '12' },
-    ],
-  },
-  {
-    name: '구글 애즈 (google_ads.xlsx) — 선택',
-    file: 'google_ads_sample.xlsx',
-    columns: [
-      { name: '날짜', type: 'YYYY-MM-DD', required: true, example: '2025-01-01' },
-      { name: '캠페인명', type: '텍스트', required: true, example: 'GDN_브랜드' },
-      { name: '노출수', type: '숫자', required: true, example: '250000' },
-      { name: '클릭수', type: '숫자', required: true, example: '3200' },
-      { name: '광고비_지출', type: '숫자 (원)', required: true, example: '2500000' },
-      { name: '전환수', type: '숫자', required: false, example: '85' },
-      { name: 'CPA', type: '숫자 (원)', required: false, example: '29400' },
-      { name: 'ROAS', type: '숫자 (배수)', required: false, example: '5.2' },
-    ],
-  },
-  {
-    name: '파트너십 광고 (partnership.xlsx) — 선택',
-    file: 'partnership_sample.xlsx',
-    columns: [
-      { name: '날짜', type: 'YYYY-MM-DD', required: true, example: '2025-01-01' },
-      { name: '파트너명', type: '텍스트', required: true, example: '파트너A' },
-      { name: '유입_클릭수', type: '숫자', required: true, example: '1200' },
-      { name: '회원가입_전환수', type: '숫자', required: true, example: '45' },
-      { name: '구매_전환수', type: '숫자', required: true, example: '12' },
-      { name: '파트너_발생매출', type: '숫자 (원)', required: false, example: '450000' },
-      { name: '지급_보상액', type: '숫자 (원)', required: false, example: '45000' },
-    ],
-  },
-  {
-    name: '웹 트래픽 (traffic.xlsx) — 선택',
-    file: 'traffic_sample.xlsx',
-    columns: [
-      { name: '날짜', type: 'YYYY-MM-DD', required: true, example: '2025-01-01' },
-      { name: '전체_세션수', type: '숫자', required: true, example: '15000' },
-      { name: '국내_세션수', type: '숫자', required: true, example: '12000' },
-      { name: '해외_세션수', type: '숫자', required: true, example: '3000' },
-      { name: '신규_방문자수', type: '숫자', required: false, example: '8500' },
-      { name: '이탈률', type: '숫자 (%)', required: false, example: '42.5' },
-    ],
-  },
-]
+import { TEMPLATES } from '@/lib/template-schema'
 
 export default function GuidePage() {
   return (
     <div className="min-h-screen bg-zinc-950 p-6">
       <div className="max-w-4xl mx-auto space-y-6">
+
+        {/* 헤더 */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold text-zinc-100">데이터 준비 가이드</h1>
-          <Link href="/"><Button variant="outline" className="border-zinc-700">← 홈으로</Button></Link>
+          <Link href="/"><Button variant="outline" className="border-zinc-700 text-zinc-300">← 홈으로</Button></Link>
         </div>
 
-        <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-4 text-blue-200 text-sm">
-          <strong>📌 준비 팁:</strong> 엑셀 파일명에 sales, google_ads, partnership, traffic 키워드를 포함하면
-          업로드 시 자동으로 파일 유형이 인식됩니다.
+        {/* 안내 배너 */}
+        <div className="bg-blue-900/20 border border-blue-700/50 rounded-xl p-4 space-y-2">
+          <p className="text-blue-200 text-sm font-medium">📌 파일 준비 핵심 원칙</p>
+          <ul className="text-blue-300/80 text-sm space-y-1">
+            <li>• 파일명에 <code className="bg-blue-900/40 px-1 rounded text-xs">sales</code>, <code className="bg-blue-900/40 px-1 rounded text-xs">google_ads</code>, <code className="bg-blue-900/40 px-1 rounded text-xs">partnership</code>, <code className="bg-blue-900/40 px-1 rounded text-xs">traffic</code> 키워드를 포함하면 업로드 시 자동 인식됩니다</li>
+            <li>• 기본매출 파일은 필수입니다. 나머지 3종은 있는 것만 올려도 됩니다</li>
+            <li>• 날짜는 <code className="bg-blue-900/40 px-1 rounded text-xs">YYYY-MM-DD</code> 형식, 금액은 쉼표 없이 숫자만 입력하세요</li>
+            <li>• 모르는 값은 0이 아닌 <strong>빈칸</strong>으로 두세요 (0과 빈칸은 다르게 처리됩니다)</li>
+          </ul>
         </div>
 
-        {FILE_GUIDES.map(guide => (
-          <Card key={guide.name} className="bg-zinc-900 border-zinc-800">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-zinc-200 text-base">{guide.name}</CardTitle>
-                <a href={`/samples/${guide.file}`} download>
-                  <Button size="sm" variant="outline" className="border-zinc-700 text-xs">
-                    샘플 다운로드
-                  </Button>
-                </a>
+        {/* 항목 정의서 안내 */}
+        <div className="bg-zinc-800/50 border border-zinc-700/40 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <p className="text-zinc-200 text-sm font-medium">📋 항목 정의서 — 각 컬럼의 의미·입력 기준·결측 처리 안내</p>
+            <p className="text-zinc-500 text-xs mt-1">어떤 값을 어떻게 입력해야 하는지, 빠진 값이 어떻게 처리되는지 확인할 수 있습니다</p>
+          </div>
+          <Link href="/definitions">
+            <Button variant="outline" className="border-zinc-600 text-zinc-300 hover:bg-zinc-700 shrink-0 ml-4">
+              항목 정의서 보기 →
+            </Button>
+          </Link>
+        </div>
+
+        {/* 템플릿 목록 */}
+        {TEMPLATES.map(template => (
+          <Card key={template.id} className="bg-zinc-900 border-zinc-800">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-zinc-100 text-base">{template.label}</CardTitle>
+                    {template.isRequired
+                      ? <span className="text-[10px] bg-red-900/40 text-red-300 border border-red-800/50 px-1.5 py-0.5 rounded">필수</span>
+                      : <span className="text-[10px] bg-zinc-800 text-zinc-500 border border-zinc-700 px-1.5 py-0.5 rounded">선택</span>
+                    }
+                    {template.sheets.length > 1 && (
+                      <span className="text-[10px] bg-blue-900/30 text-blue-400 border border-blue-800/40 px-1.5 py-0.5 rounded">{template.sheets.length}시트</span>
+                    )}
+                  </div>
+                  <p className="text-zinc-500 text-xs mt-1">{template.description}</p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Link href={`/definitions#${template.id}`}>
+                    <Button size="sm" variant="ghost" className="text-zinc-500 hover:text-zinc-300 text-xs h-8 px-3">
+                      입력 기준
+                    </Button>
+                  </Link>
+                  <a href={`/samples/${template.filename}`} download>
+                    <Button size="sm" variant="outline" className="border-zinc-700 text-zinc-300 text-xs h-8">
+                      템플릿 다운로드
+                    </Button>
+                  </a>
+                </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-zinc-700">
-                    <th className="text-left py-2 text-zinc-400 font-medium">컬럼명</th>
-                    <th className="text-left py-2 text-zinc-400 font-medium">형식</th>
-                    <th className="text-left py-2 text-zinc-400 font-medium">예시</th>
-                    <th className="text-center py-2 text-zinc-400 font-medium">필수</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {guide.columns.map(col => (
-                    <tr key={col.name} className="border-b border-zinc-800">
-                      <td className="py-2 text-zinc-200 font-mono text-xs">{col.name}</td>
-                      <td className="py-2 text-zinc-400 text-xs">{col.type}</td>
-                      <td className="py-2 text-zinc-500 text-xs">{col.example}</td>
-                      <td className="py-2 text-center">
-                        {col.required
-                          ? <span className="text-red-400 text-xs">필수</span>
-                          : <span className="text-zinc-600 text-xs">선택</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <CardContent className="pt-0 space-y-4">
+              {template.sheets.map(sheet => (
+                <div key={sheet.sheetName}>
+                  {template.sheets.length > 1 && (
+                    <p className="text-xs text-zinc-500 mb-2 font-medium">시트: <span className="text-zinc-400">{sheet.sheetName}</span></p>
+                  )}
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-zinc-800">
+                        <th className="text-left py-1.5 text-zinc-500 font-medium text-xs w-1/3">컬럼명</th>
+                        <th className="text-left py-1.5 text-zinc-500 font-medium text-xs w-1/4">형식</th>
+                        <th className="text-center py-1.5 text-zinc-500 font-medium text-xs w-16">구분</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sheet.columns.map(col => (
+                        <tr key={col.name} className="border-b border-zinc-800/50">
+                          <td className="py-1.5 text-zinc-200 font-mono text-xs">{col.name}</td>
+                          <td className="py-1.5 text-zinc-500 text-xs">{col.type}</td>
+                          <td className="py-1.5 text-center text-xs">
+                            {col.required === true && <span className="text-red-400">필수</span>}
+                            {col.required === 'recommended' && <span className="text-amber-500">권장</span>}
+                            {col.required === false && <span className="text-zinc-600">선택</span>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
             </CardContent>
           </Card>
         ))}
+
+        <p className="text-zinc-600 text-xs text-center pb-4">
+          각 컬럼의 상세 정의와 결측 처리 기준은{' '}
+          <Link href="/definitions" className="text-zinc-400 underline">항목 정의서</Link>에서 확인하세요
+        </p>
       </div>
     </div>
   )
