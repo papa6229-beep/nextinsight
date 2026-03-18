@@ -106,12 +106,6 @@ function AssistantMessage({ content, isPending }: { content: string; isPending?:
   return <div className="text-sm space-y-0.5">{elements}</div>
 }
 
-const SUGGESTED_QUESTIONS = [
-  '광고 효율이 가장 좋았던 날은 언제인가요?',
-  '해외 방문자가 구매로 이어지지 않는 이유가 뭔가요?',
-  '매출이 급락한 주요 원인을 다시 정리해주세요',
-]
-
 export function ChatInterface({ data, initialAnalysis, disabled }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
@@ -196,20 +190,27 @@ export function ChatInterface({ data, initialAnalysis, disabled }: Props) {
       <div className="flex-1 overflow-y-auto min-h-0 p-4 space-y-4">
         {messages.length === 0 && (
           <div className="space-y-3">
-            <p className="text-zinc-500 text-xs text-center">
-              {disabled ? 'AI 분석이 완료되면 질문할 수 있어요' : '분석 결과에 대해 궁금한 점을 물어보세요'}
-            </p>
-            {!disabled && (
-              <div className="space-y-1.5">
-                {SUGGESTED_QUESTIONS.map((q, i) => (
-                  <button
-                    key={i}
-                    onClick={() => sendMessage(q)}
-                    className="w-full text-left text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-800/60 hover:bg-zinc-800 border border-zinc-700/50 hover:border-zinc-600 rounded-lg px-3 py-2 transition-colors leading-relaxed"
-                  >
-                    {q}
-                  </button>
-                ))}
+            {disabled ? (
+              <p className="text-zinc-500 text-xs text-center">AI 분석이 완료되면 질문할 수 있어요</p>
+            ) : (
+              <div className="bg-zinc-800/40 border border-zinc-700/40 rounded-xl p-4 space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">💬</span>
+                  <p className="text-xs font-medium text-zinc-300">분석 정확도를 높이려면</p>
+                </div>
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  아래와 같은 쇼핑몰 특이사항을 알려주시면 데이터와 결합해 더 정밀한 분석이 가능합니다.
+                </p>
+                <ul className="space-y-1.5 text-xs text-zinc-500">
+                  <li className="flex gap-2"><span className="text-zinc-600 shrink-0">•</span>분석 기간 중 진행한 프로모션·할인 행사</li>
+                  <li className="flex gap-2"><span className="text-zinc-600 shrink-0">•</span>특정 날짜의 외부 이슈 (배송 지연, 시스템 오류 등)</li>
+                  <li className="flex gap-2"><span className="text-zinc-600 shrink-0">•</span>신제품 출시, 카테고리 변경, 가격 조정 시점</li>
+                  <li className="flex gap-2"><span className="text-zinc-600 shrink-0">•</span>특정 광고 채널의 예산 변경이나 일시 중단 내역</li>
+                  <li className="flex gap-2"><span className="text-zinc-600 shrink-0">•</span>그 밖에 매출·트래픽에 영향을 줬을 만한 모든 사항</li>
+                </ul>
+                <p className="text-[11px] text-zinc-600 pt-1 border-t border-zinc-700/40">
+                  입력하지 않아도 데이터 기반 분석은 진행됩니다. 추가 맥락이 있을수록 정확도가 높아져요.
+                </p>
               </div>
             )}
           </div>
