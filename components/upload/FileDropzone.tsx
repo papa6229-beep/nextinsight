@@ -18,6 +18,7 @@ const FILE_TYPE_LABELS: Record<FileType, string> = {
   googleAds: '구글 애즈',
   partnership: '파트너십',
   traffic: '트래픽',
+  eventCoupon: '이벤트·쿠폰',
 }
 
 export function FileDropzone({ onFilesSelected, disabled }: Props) {
@@ -37,6 +38,7 @@ export function FileDropzone({ onFilesSelected, disabled }: Props) {
       if (lower.includes('google') || lower.includes('ads') || lower.includes('구글')) type = 'googleAds'
       else if (lower.includes('partner') || lower.includes('파트너')) type = 'partnership'
       else if (lower.includes('traffic') || lower.includes('트래픽')) type = 'traffic'
+      else if (lower.includes('event') || lower.includes('이벤트') || lower.includes('쿠폰') || lower.includes('coupon')) type = 'eventCoupon'
       return { file, type }
     })
     setSelectedFiles(withTypes)
@@ -80,17 +82,25 @@ export function FileDropzone({ onFilesSelected, disabled }: Props) {
       {selectedFiles.length > 0 && (
         <div className="space-y-2">
           {selectedFiles.map((fw, i) => (
-            <div key={i} className="flex items-center gap-3 bg-zinc-800 rounded-lg px-3 py-2">
-              <span className="text-zinc-300 flex-1 truncate text-sm">{fw.file.name}</span>
-              <select
-                value={fw.type}
-                onChange={e => updateType(i, e.target.value as FileType)}
-                className="bg-zinc-700 text-zinc-200 text-sm rounded px-2 py-1 border border-zinc-600"
-              >
-                {(Object.keys(FILE_TYPE_LABELS) as FileType[]).map(t => (
-                  <option key={t} value={t}>{FILE_TYPE_LABELS[t]}</option>
-                ))}
-              </select>
+            <div key={i} className="space-y-1">
+              <div className="flex items-center gap-3 bg-zinc-800 rounded-lg px-3 py-2">
+                <span className="text-zinc-300 flex-1 truncate text-sm">{fw.file.name}</span>
+                <select
+                  value={fw.type}
+                  onChange={e => updateType(i, e.target.value as FileType)}
+                  className="bg-zinc-700 text-zinc-200 text-sm rounded px-2 py-1 border border-zinc-600"
+                >
+                  {(Object.keys(FILE_TYPE_LABELS) as FileType[]).map(t => (
+                    <option key={t} value={t}>{FILE_TYPE_LABELS[t]}</option>
+                  ))}
+                </select>
+              </div>
+              {fw.type === 'eventCoupon' && (
+                <div className="flex items-start gap-2 bg-blue-900/20 border border-blue-700/40 rounded-lg px-3 py-2 text-xs text-blue-300">
+                  <span className="shrink-0 font-medium text-blue-200">📋 2시트 구조 감지</span>
+                  <span className="text-blue-300/80">이벤트_마스터(정의) + 이벤트_일별성과(성과) 시트로 파싱됩니다. 마스터 시트에 날짜가 없는 것은 정상입니다.</span>
+                </div>
+              )}
             </div>
           ))}
         </div>

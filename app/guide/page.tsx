@@ -18,10 +18,21 @@ export default function GuidePage() {
         <div className="bg-blue-900/20 border border-blue-700/50 rounded-xl p-4 space-y-2">
           <p className="text-blue-200 text-sm font-medium">📌 파일 준비 핵심 원칙</p>
           <ul className="text-blue-300/80 text-sm space-y-1">
-            <li>• 파일명에 <code className="bg-blue-900/40 px-1 rounded text-xs">sales</code>, <code className="bg-blue-900/40 px-1 rounded text-xs">google_ads</code>, <code className="bg-blue-900/40 px-1 rounded text-xs">partnership</code>, <code className="bg-blue-900/40 px-1 rounded text-xs">traffic</code> 키워드를 포함하면 업로드 시 자동 인식됩니다</li>
-            <li>• 기본매출 파일은 필수입니다. 나머지 3종은 있는 것만 올려도 됩니다</li>
+            <li>• 파일명에 <code className="bg-blue-900/40 px-1 rounded text-xs">sales</code>, <code className="bg-blue-900/40 px-1 rounded text-xs">google_ads</code>, <code className="bg-blue-900/40 px-1 rounded text-xs">partnership</code>, <code className="bg-blue-900/40 px-1 rounded text-xs">traffic</code>, <code className="bg-blue-900/40 px-1 rounded text-xs">이벤트</code> 키워드를 포함하면 업로드 시 자동 인식됩니다</li>
+            <li>• 기본매출 파일은 필수입니다. 나머지 4종은 있는 것만 올려도 됩니다</li>
             <li>• 날짜는 <code className="bg-blue-900/40 px-1 rounded text-xs">YYYY-MM-DD</code> 형식, 금액은 쉼표 없이 숫자만 입력하세요</li>
             <li>• 모르는 값은 0이 아닌 <strong>빈칸</strong>으로 두세요 (0과 빈칸은 다르게 처리됩니다)</li>
+          </ul>
+        </div>
+
+        {/* 이벤트·쿠폰 2시트 안내 */}
+        <div className="bg-amber-900/15 border border-amber-700/40 rounded-xl p-4 space-y-2">
+          <p className="text-amber-200 text-sm font-medium">📋 이벤트·쿠폰 파일 — 2시트 구조 안내</p>
+          <ul className="text-amber-300/80 text-sm space-y-1.5">
+            <li>• 이벤트·쿠폰 파일은 <strong className="text-amber-200">2시트 구조</strong>입니다 — 시트1(이벤트_마스터) + 시트2(이벤트_일별성과)</li>
+            <li>• 시트1(이벤트_마스터)는 이벤트 <strong className="text-amber-200">정의용</strong> 시트이므로 날짜 컬럼이 없는 것이 <strong className="text-amber-200">정상</strong>입니다</li>
+            <li>• 날짜 기반 분석은 <strong className="text-amber-200">시트2(이벤트_일별성과)</strong> 기준으로만 진행됩니다</li>
+            <li>• 업로드 시 파일 성격은 반드시 <strong className="text-amber-200">이벤트·쿠폰</strong>으로 선택하세요 — 다른 타입으로 선택하면 오류가 발생합니다</li>
           </ul>
         </div>
 
@@ -71,6 +82,12 @@ export default function GuidePage() {
               </div>
             </CardHeader>
             <CardContent className="pt-0 space-y-4">
+              {template.id === 'eventCoupon' && (
+                <div className="bg-amber-900/15 border border-amber-700/30 rounded-lg px-3 py-2 text-xs text-amber-300/80 space-y-0.5">
+                  <p><span className="text-amber-200 font-medium">시트1 이벤트_마스터</span> — 이벤트 정의 정보. 날짜 컬럼 없음이 정상.</p>
+                  <p><span className="text-amber-200 font-medium">시트2 이벤트_일별성과</span> — 날짜별 성과 데이터. 분석 기준 시트.</p>
+                </div>
+              )}
               {template.sheets.map(sheet => (
                 <div key={sheet.sheetName}>
                   {template.sheets.length > 1 && (

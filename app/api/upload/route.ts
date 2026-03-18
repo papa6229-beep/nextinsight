@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { parseSales, parseGoogleAds, parsePartnership, parseTraffic, validateFileSize } from '@/lib/excel-parser'
+import { parseSales, parseGoogleAds, parsePartnership, parseTraffic, parseEventCoupon, validateFileSize } from '@/lib/excel-parser'
 import { getDateRange } from '@/lib/data-transformer'
 import type { ParsedData, FileType, ApiError } from '@/types/marketing'
 
@@ -10,6 +10,7 @@ function detectFileType(filename: string): FileType | null {
   if (lower.includes('google') || lower.includes('ads') || lower.includes('구글')) return 'googleAds'
   if (lower.includes('partner') || lower.includes('파트너')) return 'partnership'
   if (lower.includes('traffic') || lower.includes('트래픽')) return 'traffic'
+  if (lower.includes('event') || lower.includes('이벤트') || lower.includes('쿠폰') || lower.includes('coupon')) return 'eventCoupon'
   return null
 }
 
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest) {
         else if (fileType === 'googleAds') parsed.googleAds = parseGoogleAds(buffer)
         else if (fileType === 'partnership') parsed.partnership = parsePartnership(buffer)
         else if (fileType === 'traffic') parsed.traffic = parseTraffic(buffer)
+        else if (fileType === 'eventCoupon') parsed.eventCoupon = parseEventCoupon(buffer)
       } catch (e: unknown) {
         const err = e as Error & { code?: string }
         return NextResponse.json<ApiError>(
@@ -83,13 +85,23 @@ export async function POST(req: NextRequest) {
     const dateRange = getDateRange(data)
     const uploadedFiles = Object.keys(parsed) as FileType[]
 
+    // rowCounts: eventCoupon은 master/daily 각각 따로 집계
+    const rowCounts: Record<string, number> = {}
+    for (const k of uploadedFiles) {
+      if (k === 'eventCoupon') continue
+      rowCounts[k] = (data[k] as unknown[])?.length ?? 0
+    }
+
+    const eventCouponCounts = parsed.eventCoupon
+      ? { master: parsed.eventCoupon.master.length, daily: parsed.eventCoupon.daily.length }
+      : undefined
+
     return NextResponse.json({
       data,
       summary: {
         dateRange,
-        rowCounts: Object.fromEntries(
-          uploadedFiles.map(k => [k, (data[k] as unknown[])?.length ?? 0])
-        ),
+        rowCounts,
+        ...(eventCouponCounts ? { eventCouponCounts } : {}),
         uploadedFiles,
       },
     })
